@@ -1,0 +1,8 @@
+'use client';
+import { useActionState } from 'react';
+import { criarCliente } from './actions';
+export default function ClienteForm({ initial }: { initial?: { id: string; nome: string; telefone: string | null; observacoes: string | null; limite_centavos: number | null } }) {
+  const action = initial ? async (_: { ok: true } | { ok: false; erro: string }, data: FormData) => (await import('./actions')).editarCliente(data) : async (_: { ok: true } | { ok: false; erro: string }, data: FormData) => criarCliente(data);
+  const [state, formAction, pending] = useActionState(action, { ok: true } as { ok: true } | { ok: false; erro: string });
+  return <form action={formAction} className="mt-8 space-y-5">{initial && <input type="hidden" name="id" value={initial.id} />}<label className="block">Nome<input required name="nome" defaultValue={initial?.nome} className="mt-1 min-h-12 w-full rounded-lg border px-3" /></label><label className="block">Telefone (opcional)<input name="telefone" inputMode="numeric" defaultValue={initial?.telefone ?? ''} className="mt-1 min-h-12 w-full rounded-lg border px-3" /></label><label className="block">Observações<textarea name="observacoes" defaultValue={initial?.observacoes ?? ''} className="mt-1 w-full rounded-lg border p-3" /></label><label className="block">Limite próprio (centavos, opcional)<input name="limite_centavos" inputMode="numeric" defaultValue={initial?.limite_centavos ?? ''} className="mt-1 min-h-12 w-full rounded-lg border px-3" /></label>{state.ok === false && <p role="alert" className="text-red-700">{state.erro}</p>}<button disabled={pending} className="rounded-lg bg-zinc-900 px-4 py-3 text-white">{pending ? 'Salvando…' : 'Salvar'}</button></form>;
+}
