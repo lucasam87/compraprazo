@@ -1,7 +1,7 @@
 'use server';
 
 import { requireActiveProfile } from '../../lib/auth';
-import { createPreviaCompra } from '../../lib/compras';
+import { criarPreviaCompra } from '../../lib/compras';
 import { createClient } from '../../lib/supabase/server';
 
 export type CompraActionState = { ok: true; compraId: string } | { ok: false; erro: string };
@@ -17,7 +17,7 @@ export async function criarCompra(formData: FormData): Promise<CompraActionState
     const descricao = String(formData.get('descricao') ?? '').trim() || null;
     const autorizar = formData.get('autorizar_excecao') === 'true';
     if (!clienteId) return { ok: false, erro: 'Selecione um cliente.' };
-    createPreviaCompra({ valorTotalCentavos: valor, quantidadeParcelas: quantidade, primeiroVencimento: primeiro });
+    criarPreviaCompra({ valorTotalCentavos: valor, quantidadeParcelas: quantidade, primeiroVencimento: primeiro });
     if (autorizar && profile.papel !== 'dono') return { ok: false, erro: 'Apenas o dono pode autorizar esta compra.' };
     const { data, error } = await client.rpc('criar_compra', { p_cliente: clienteId, p_valor_centavos: valor, p_descricao: descricao, p_qtd_parcelas: quantidade, p_primeiro_vencimento: String(formData.get('primeiro_vencimento')), p_autorizar_excecao: autorizar });
     if (error || typeof data !== 'string') return { ok: false, erro: 'Não foi possível registrar a compra.' };
