@@ -14,3 +14,18 @@ export function gerarRecibo(input: { cliente: string; data: Date; valorPagoCenta
   if (input.saldoRestanteCentavos < 0) throw new Error('Saldo inválido.');
   return `Recibo — Crediário\nCliente: ${input.cliente}\nPago em ${input.data.toISOString().slice(0, 10)}: ${input.valorPagoCentavos} centavos (${input.forma})\nSaldo restante: ${input.saldoRestanteCentavos} centavos`;
 }
+
+const nomesFormas: Record<FormaPagamento, string> = {
+  dinheiro: 'Dinheiro',
+  pix: 'Pix',
+  cartao: 'Cartão',
+  outro: 'Outro',
+};
+
+export function gerarReciboPagamento(input: { pagamentoId: string; valorCentavos: number; forma: FormaPagamento; criadoEm: Date }): string {
+  if (!input.pagamentoId || !Number.isSafeInteger(input.valorCentavos) || input.valorCentavos < 0) throw new Error('Dados do recibo inválidos.');
+  if (Number.isNaN(input.criadoEm.getTime())) throw new Error('Data do recibo inválida.');
+  const valor = (input.valorCentavos / 100).toFixed(2).replace('.', ',');
+  const data = input.criadoEm.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+  return `Recibo — Crediário\nPagamento: ${input.pagamentoId}\nValor: R$ ${valor}\nForma: ${nomesFormas[input.forma]}\nData: ${data}`;
+}

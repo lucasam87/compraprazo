@@ -1,10 +1,10 @@
 'use server';
 
 import { requireActiveProfile } from '../../lib/auth';
-import { type FormaPagamento } from '../../lib/pagamentos';
+import { gerarReciboPagamento, type FormaPagamento } from '../../lib/pagamentos';
 import { createClient } from '../../lib/supabase/server';
 
-export type PagamentoActionState = { ok: true; pagamentoId: string } | { ok: false; erro: string };
+export type PagamentoActionState = { ok: true; pagamentoId: string; recibo: string } | { ok: false; erro: string };
 
 export async function registrarPagamento(formData: FormData): Promise<PagamentoActionState> {
   try {
@@ -15,6 +15,6 @@ export async function registrarPagamento(formData: FormData): Promise<PagamentoA
     const forma = String(formData.get('forma') ?? '') as FormaPagamento;
     const { data, error } = await client.rpc('registrar_pagamento', { p_parcela: parcela, p_valor_recebido_centavos: valor, p_forma: forma });
     if (error || typeof data !== 'string') return { ok: false, erro: 'Não foi possível registrar o pagamento.' };
-    return { ok: true, pagamentoId: data };
+    return { ok: true, pagamentoId: data, recibo: gerarReciboPagamento({ pagamentoId: data, valorCentavos: valor, forma, criadoEm: new Date() }) };
   } catch { return { ok: false, erro: 'Não foi possível registrar o pagamento.' }; }
 }
